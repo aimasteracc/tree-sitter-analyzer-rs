@@ -3013,9 +3013,9 @@
     }
   ],
   "corpus": "tests/golden/corpus_python.py",
-  "generator": "rust/fixtures/tools/gen_facade.py",
+  "generator": "fixtures/tools/gen_facade.py",
   "package_version": "3.1.2",
-  "project_root": "/workspace/tree-sitter-analyzer",
+  "project_root": ".",
   "registry_order": [
     "search",
     "nav",

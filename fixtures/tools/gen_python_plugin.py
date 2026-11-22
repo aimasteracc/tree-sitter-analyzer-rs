@@ -574,6 +574,8 @@ def step6_manifest() -> None:
         f"fixtures/{path.relative_to(FIXTURES_ROOT).as_posix()}"
         for path in FIXTURES_ROOT.rglob("*")
         if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.suffix != ".pyc"
     )
     if "fixtures/MANIFEST.json" not in files:
         files.append("fixtures/MANIFEST.json")
@@ -600,7 +602,7 @@ def step6_manifest() -> None:
         },
         "normalization_rules": [
             "analysis_time(任意层级)一律置为 null;不做其他改写(SPEC §3)",
-            "固定 cwd 为仓库根,所有 file_path 用相对路径,产物不含绝对路径",
+            "固定 cwd 为仓库根,所有 file_path 用相对路径,产物不含绝对路径;不收录 __pycache__ / .pyc",
             "named_node_counts 按类型名排序;元素按 element_type 分组、保持抽取顺序",
             "corpus_python_expected.json 为仓内黄金文件的逐字节只读副本",
             "片段源码内嵌于生成脚本,先落盘再走同一 analyze_file 录音路径",

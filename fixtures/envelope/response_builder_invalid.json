@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generator": "rust/fixtures/tools/gen_envelope_cli.py",
+    "generator": "fixtures/tools/gen_envelope_cli.py",
     "tsa_version": "3.1.2",
     "tsa_module": "/tmp/tsa-v312-venv/lib/python3.12/site-packages/tree_sitter_analyzer/__init__.py",
     "python_version": "3.12.16",
     "python_executable": "/tmp/tsa-v312-venv/bin/python",
-    "generated_at_utc": "2026-11-22T06:07:37.808853+00:00",
+    "generated_at_utc": "2026-11-22T10:11:56.139483+00:00",
     "provenance": "captured from real tree_sitter_analyzer calls; never hand-edited"
   },
   "invalid_verdicts": [

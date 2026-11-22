@@ -320,7 +320,7 @@ async def build_dispatch_document() -> dict[str, Any]:
     return {
         "generator": SCRIPT_PATH,
         "package_version": TSA_VERSION,
-        "project_root": REPO_ROOT,
+        "project_root": ".",
         "corpus": CORPUS,
         "runner": "anyio.run",
         "registry_order": [name for name, _facade in tool_instances],

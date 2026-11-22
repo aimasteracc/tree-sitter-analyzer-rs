@@ -91,7 +91,7 @@ fn manifest_has_expected_top_level_structure() {
         assert!(manifest.get(block).is_some_and(Value::is_object), "缺少块 `{block}`");
     }
     assert_eq!(arr(&manifest, "normalization_rules"), 5);
-    assert_eq!(arr(&manifest, "files"), 22);
+    assert_eq!(arr(&manifest, "files"), 21);
     // pip_freeze.packages 也是数组
     assert!(obj(&manifest, "pip_freeze").get("packages").is_some_and(Value::is_array));
 }

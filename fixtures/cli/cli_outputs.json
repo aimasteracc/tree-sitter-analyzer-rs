@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generator": "rust/fixtures/tools/gen_envelope_cli.py",
+    "generator": "fixtures/tools/gen_envelope_cli.py",
     "tsa_version": "3.1.2",
     "tsa_module": "/tmp/tsa-v312-venv/lib/python3.12/site-packages/tree_sitter_analyzer/__init__.py",
     "python_version": "3.12.16",
     "python_executable": "/tmp/tsa-v312-venv/bin/python",
-    "generated_at_utc": "2026-11-22T06:07:37.808853+00:00",
+    "generated_at_utc": "2026-11-22T10:11:56.139483+00:00",
     "provenance": "captured from real tree_sitter_analyzer calls; never hand-edited",
     "cli_binary": "/tmp/tsa-v312-venv/bin/tree-sitter-analyzer"
   },
@@ -439,7 +439,7 @@
           "language": "python",
           "file_path": "tests/golden/corpus_python.py",
           "analyzer_version": "2.0.0",
-          "timestamp": 1795327658.1783614
+          "timestamp": null
         },
         "success": true,
         "summary_line": "tests/golden/corpus_python.py (python) structure: classes=8 methods=28 fields=1 imports=4 lines=257",
@@ -451,7 +451,8 @@
         }
       },
       "timing_keys_nulled": [
-        "analysis_time"
+        "analysis_time",
+        "timestamp"
       ],
       "stderr": "",
       "stdout_raw_if_unparseable": null
