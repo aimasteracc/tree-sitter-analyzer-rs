@@ -1,11 +1,11 @@
 # SPEC — tree-sitter-analyzer Rust 改写（Stage 0 规格）
 
-本文件随 `rust/` 子树迁入独立仓库 `aimasteracc/tree-sitter-analyzer-rs` 后位于仓库根。下文凡写 `rust/SPEC.md`、`rust/fixtures/`、`rust/tsa-core/` 的路径，在本仓库中分别对应 `SPEC.md`、`fixtures/`、`tsa-core/`。
+本仓库 [`aimasteracc/tree-sitter-analyzer-rs`](https://github.com/aimasteracc/tree-sitter-analyzer-rs) 是 TSA 的独立 Rust 改写实验。规格、黄金 fixtures 与 `tsa-core` 位于仓库根（由原 TSA 分支 `feature/rust-anything-rewrite` 的 `rust/` 子树迁出；该 PR #1961 已关闭且未合并）。Python 源码与 PyPI 发行仍只存在于上游 [`aimasteracc/tree-sitter-analyzer`](https://github.com/aimasteracc/tree-sitter-analyzer)。
 
 - 基线：aimasteracc/tree-sitter-analyzer **v3.1.2**（commit `f95da6035a1191add763d254aa36313037dbabe3`，tag `v3.1.2`，`tree_sitter_analyzer/__init__.py` `__version__ == "3.1.2"`）
 - 工具：aimasteracc/rust-anything @ `8ac2c1c8ab77bd1a20588f0c03f0a72ab99a046e`（= 上游 erkamyaman/rust-anything main，MIT；已通过第三方只读安检，见 `/workspace/oss-review/reports/rust-anything.md`）
-- 分支：`feature/rust-anything-rewrite`（从 `origin/main` @ `f95da603` 开出）。**所有改写产物只放 `rust/` 目录**；不修改任何 Python 源码、`tests/`、`pyproject.toml`、`.github/`
-- 本文每条契约均已在基线源码中核实；来源路径随条目标注
+- 当前工作只在本仓库进行。不要向 TSA 原仓库的 `main` / `develop` / `hotfix/*` / `release/*` 推送任何改写产物，也不要修改 TSA 的 Python 源码、`pyproject.toml` 或发布工作流。
+- 本文每条契约均已在基线源码中核实；来源路径随条目标注（指向上游 TSA v3.1.2 源码树）
 
 ---
 
@@ -20,7 +20,7 @@
 | 项 | 值 | 来源 |
 |---|---|---|
 | TSA 版本 / 提交 | 3.1.2 / `f95da603`（= tag `v3.1.2`） | `git log`、`pyproject.toml` |
-| 工作分支 | `feature/rust-anything-rewrite`（自 `origin/main` 开出） | `git branch` |
+| 工作分支 | 本仓库功能分支（默认分支 `main`）。TSA 侧历史来源为 `feature/rust-anything-rewrite`（PR #1961 已关闭未合并） | 本仓库 / 上游 PR |
 | 黄金来源 | PyPI `tree-sitter-analyzer==3.1.2`（隔离 venv 安装，非本地源码运行） | 见 §5.1 |
 | 依赖解析（PyPI v3.1.2 约束下） | `tree-sitter>=0.26.0` → **0.26.1**；`tree-sitter-python>=0.23.6,<0.25.0` → **0.23.6** | `pyproject.toml` L56/L62 + PyPI 版本表（0.23.6 为 <0.25.0 的最新版；tree-sitter PyPI 最新即 0.26.1） |
 | rust-anything 侧 grammar | `tree-sitter` **0.27.2**、`tree-sitter-python` **0.25.0** | rust-anything `Cargo.lock` / `Cargo.toml` |
@@ -204,10 +204,21 @@ Rust 侧对 `tests/golden/corpus_python.py` 的节点类型计数必须逐键相
 | 时间戳 / 缓存戳 / 绝对路径（任意键名） | 任何 fixture | 生成 fixtures 时即用相对路径与固定 cwd，避免引入；对照器对 `*_at`/`timestamp` 类键删除 |
 | `node_count`、`node_types` 计数 | `analyze_file`、corpus 对照 | **不可归一化，只能对齐 grammar 版本**（见下） |
 
-**node_count 与 grammar 版本差异风险**：PyPI v3.1.2 解析为 `tree-sitter 0.26.1` + `tree-sitter-python 0.23.6`（§1.2），而 rust-anything 依赖 `tree-sitter 0.27.2` + `tree-sitter-python 0.25.0`。两个 grammar 版本的节点命名/结构可能不同，直接影响 `node_count` 与 `node_types` 计数及抽取结果。策略：
-1. `rust/tsa-core` 的 Python grammar crate **优先尝试钉到与 Python 侧一致的版本**；若 crates.io 无对应版本，则记录差异并在 fixtures 中为 Rust 侧单独生成一份「grammar 标注版」期望（文件名带 grammar 版本后缀），差异必须逐项列举、不得静默通过；
-2. `corpus_python_expected.json` 的 9 键计数是**锁定验收目标**；若 Rust 侧 grammar 无法复现，视为该单元未完成，不得修改黄金文件；
-3. 每份 fixture 在 `MANIFEST.json` 中记录生成侧的 `tree-sitter`/`tree-sitter-python`（或 Rust crate）版本。
+**语法版本策略（实现 Python 插件前必须落地）**
+
+对照基线（锁定，不可改写）是 PyPI v3.1.2 解析出的 grammar：
+
+- Python 侧：`tree-sitter==0.26.1`、`tree-sitter-python==0.23.6`（记在 `fixtures/MANIFEST.json` 的 `grammar_versions` / `pip_freeze`）
+- Rust / rust-anything 侧常见版本：`tree-sitter 0.27.2`、`tree-sitter-python 0.25.0`
+
+两个版本的节点命名或结构可能不同，会直接影响 `node_count`、`node_types` 计数和抽取结果。`fixtures/python_plugin/corpus_python_expected.json` 的 9 键计数、以及 `corpus_python_node_types.json` 的全量 named-node 计数，都是 v3.1.2 锁定黄金，**禁止为了让 Rust 测试变绿而改这些数字**。对照器也**不得**对节点计数做近似、忽略或静默跳过。
+
+处理流程（必须显式，按顺序）：
+
+1. **优先钉版本。** `tsa-core` 的 Python grammar crate 优先钉到与 Python 侧一致的版本（0.26.1 / 0.23.6，或 crates.io 上可证明行为兼容的对应 crate 版本）。钉成功后，Rust 输出必须与锁定黄金计数逐项一致；对不上，CI 必须失败。
+2. **无法钉版本或钉了仍无法对齐时，另出 grammar 标注版期望，不改锁定黄金。** 在 `fixtures/` 增加带 Rust grammar 版本后缀的期望文件（例如 `corpus_python_node_types.tree-sitter-python-0.25.0.json`），并在 `fixtures/GRAMMAR_DIFF.md` 中逐项列举差异（类型名、计数、新增或消失的节点、影响的测试）。未登记的任何节点计数差异，CI 必须失败。
+3. **差异清单必须经过人工审批。** `GRAMMAR_DIFF.md` 在进入默认分支或作为 Rust 侧对照目标之前，需要维护者书面确认（PR 评论或提交说明中的明确同意）。未经审批不得把标注版期望当作绿灯标准。
+4. 每份 fixture 在 `MANIFEST.json` 中记录生成侧的 `tree-sitter` / `tree-sitter-python`（或 Rust crate）版本。锁定黄金始终来自隔离 venv 的 `tree-sitter-analyzer==3.1.2`，禁止手写节点计数。
 
 ---
 
@@ -235,29 +246,35 @@ Rust 侧对 `tests/golden/corpus_python.py` 的节点类型计数必须逐键相
 
 analyze 的默认单元切分是**目录级**：`mcp/tools/`（168 文件 / 50k LOC）与 `mcp/`（blocked，dynamic-code + 巨型 import cycle）无法作为单个 bridge 单元推进；整目录一次性移植会撞 rust-anything 的行数门禁与录制可行性。
 
+**禁止对 `mcp/` 或 `mcp/tools/` 做整目录 `rust-anything bridge`（含 `bridge --force` 指向整个目录）。** 阶段 2 必须遵守本条，不能为了赶进度对整棵 MCP 树强行拆包。
+
 **缓解策略**：
-1. **阶段 2–3**：对目标**单文件 / 子模块**（如 `mcp/tools/_response_builder.py`、`mcp/tools/tool_response.py`、`mcp/tools/facade_tool.py`、`mcp/facade_map.py`）使用 `bridge --force` + PyO3，绕过目录级 readiness 评估，以本规格的契约测试为真门禁；
-2. **或**先在 `rust/tsa-core` 建立**纯 Rust 契约与核心实现**（不接 Python import graph），行为对齐 fixtures 后，再决定是否/如何接 PyO3 桥回原包（过渡期默认不 `enable`）；
+1. **阶段 2–3**：只对目标**单文件 / 子模块**（如 `mcp/tools/_response_builder.py`、`mcp/tools/tool_response.py`、`mcp/tools/facade_tool.py`、`mcp/facade_map.py`）使用 `bridge --force` + PyO3，绕过目录级 readiness 评估，以本规格的契约测试为真门禁；
+2. **或**先在 `tsa-core` 建立**纯 Rust 契约与核心实现**（不接 Python import graph），行为对齐 fixtures 后，再决定是否/如何接 PyO3 桥回原包（过渡期默认不 `enable`）；
 3. import cycle 的单元（`mcp/`、`mcp/tools/`）在纯 Rust 侧按本规格的边界（envelope → facade 分发 → 插件）重新切分，不复制 Python 侧的循环依赖结构。
 
-### 4.3 Stage 0–1 产物布局（全部在 `rust/` 下）
+### 4.3 Stage 0–1 产物布局（本仓库根）
 
 ```
-rust/
+.
 ├── SPEC.md                 # 本规格（Stage 0）
+├── Cargo.toml              # workspace（members = ["tsa-core"]）
 ├── fixtures/               # Stage 1：PyPI v3.1.2 真实黄金输出（规范化后）
-│   ├── MANIFEST.json       #   生成命令、venv freeze（grammar 版本）、归一化规则版本
+│   ├── MANIFEST.json       #   生成命令、venv freeze（grammar 版本）、归一化规则
+│   ├── tools/              #   重录脚本（必须用隔离 venv 的 3.1.2，禁止手写期望）
 │   ├── envelope/           #   build_response/build_error/… 与 envelope_violations 用例
 │   ├── facade/             #   8 facades + set_project_path + 62 legacy + help + INVALID_ARGUMENT
 │   ├── cli/                #   CLI envelope 黄金（corpus_python.py 等）
 │   └── python_plugin/      #   corpus_python 节点计数 + extract_elements/AnalysisResult 输出
+├── tests/golden/           # 从 TSA v3.1.2 迁入的语料与锁定的 corpus_python_expected.json
+├── tools/                  # CI 判定脚本与待实现测试清单
 └── tsa-core/               # Stage 1：红灯契约测试 crate（todo!() 占位实现）
-    ├── Cargo.toml
-    ├── tests/              #   读 fixtures 的契约测试（红灯）
+    ├── Cargo.toml          # publish = false
+    ├── tests/              #   fixtures_smoke（须绿）+ 契约测试
     └── src/                #   lib.rs + todo!() 模块
 ```
 
-Stage 2+ 若使用 rust-anything bridge，其默认产物目录 `rust/<unit>-rs/` 同样落在本目录内。
+Stage 2+ 若使用 rust-anything bridge，默认产物目录不要写进上游 TSA；放在本仓库内单独前缀下（例如 `bridge/<unit>-rs/`），且仍遵守 §4.2：禁止对 `mcp/` 整目录 bridge。
 
 ---
 
@@ -266,37 +283,39 @@ Stage 2+ 若使用 rust-anything bridge，其默认产物目录 `rust/<unit>-rs/
 ### 5.1 黄金生成（隔离 venv，PyPI v3.1.2；不使用本地源码）
 
 ```bash
-python3 -m venv /tmp/tsa312
-/tmp/tsa312/bin/pip install "tree-sitter-analyzer==3.1.2"
-/tmp/tsa312/bin/pip freeze            # 记入 rust/fixtures/MANIFEST.json
-                                      # 预期含 tree-sitter==0.26.1、tree-sitter-python==0.23.6
+# 推荐：uv venv（本机常用路径 /tmp/tsa-v312-venv）
+uv venv /tmp/tsa-v312-venv --python 3.12
+uv pip install --python /tmp/tsa-v312-venv/bin/python "tree-sitter-analyzer==3.1.2"
+# 必须解析为 tree-sitter==0.26.1、tree-sitter-python==0.23.6，且包来自 venv 而非源码树
 
-cd /workspace/tree-sitter-analyzer    # 仅作输入语料的读取位置；产物只写 rust/
-# CLI envelope 黄金（--output-format json 为默认）
-/tmp/tsa312/bin/tree-sitter-analyzer tests/golden/corpus_python.py \
-    --output-format json > rust/fixtures/cli/corpus_python.cli.json
+cd /path/to/tree-sitter-analyzer-rs   # 本仓库根；语料在 tests/golden/，产物只写 fixtures/
+/tmp/tsa-v312-venv/bin/python fixtures/tools/gen_envelope_cli.py
+/tmp/tsa-v312-venv/bin/python fixtures/tools/gen_facade.py
+/tmp/tsa-v312-venv/bin/python fixtures/tools/gen_python_plugin.py   # 最后跑，刷新 MANIFEST
 ```
 
-- MCP facade / envelope 黄金：经 `tree-sitter-analyzer-mcp`（stdio JSON-RPC `tools/call`）驱动，driver 脚本放 `rust/fixtures/tools/`（Stage 1 编写，只写 `rust/`）；逐个录制 8 facades 的代表性 action、`action=help`、`set_project_path`、62 个 legacy 名转发、未知 action / 非法参数错误信封
-- corpus 节点计数黄金直接采用仓内 `tests/golden/corpus_python_expected.json`（基线冻结版本，只读复制进 `rust/fixtures/python_plugin/`）
+- 三个生成脚本都必须断言 `tree_sitter_analyzer.__version__ == "3.1.2"` 且安装来自隔离 venv。禁止手写黄金 JSON。
+- 生成时：路径一律相对本仓库根（不要写 `rust/fixtures/` 前缀，也不要写 `/workspace/tree-sitter-analyzer` 这类绝对路径）；`facade_dispatch.json` 的 `project_root` 记为 `"."`；`MANIFEST.json` 不收录 `__pycache__` / `.pyc`；CLI `analysis_metadata.timestamp` 与其他计时键按 §3 置空。
+- corpus 节点计数黄金直接采用仓内 `tests/golden/corpus_python_expected.json`（TSA v3.1.2 冻结副本，只读复制进 `fixtures/python_plugin/`）
 - 每份产物落地前按 §3 规则归一化；`MANIFEST.json` 记录：生成日期、安装命令、`pip freeze`、归一化规则、TSA 版本/commit
 
 ### 5.2 Stage 1 红灯判据
 
 ```bash
-cd rust/tsa-core && cargo test
+cargo test --workspace --no-fail-fast
+python3 tools/check_contract_status.py
 ```
 
 红灯成立当且仅当：
 1. `cargo test` **编译通过**（契约测试本身无语法/类型错误）；
-2. **fixtures 解析通过**（所有 `rust/fixtures/**/*.json` 能被测试加载并断言非空——单独的 `fixtures_load` 测试组全绿）；
-3. 行为测试**因未实现而失败**：被测函数体为 `todo!()`/`unimplemented!()`，失败信息可定位到对应契约条目（envelope / facade 分发 / python 插件）。
+2. **fixtures 解析通过**：`fixtures_smoke` 测试组全绿（加载 `fixtures/**/*.json` 并断言结构）；
+3. 行为测试按 `tools/pending-contract-tests.txt` **逐条**判定：清单内测试必须因 `todo!()` / `unimplemented!()` 失败；清单外测试必须通过。清单内意外通过、清单内因断言/路径/fixture 失败、或清单外失败，CI 都必须红。
 
-若编译失败或 fixtures 加载失败，不算合格红灯，先修测试本身。
+若编译失败或 fixtures 加载失败，不算合格红灯，先修测试本身。不得再用「日志里出现一次 `not yet implemented` 且总体非 0」当作成功。
 
 ### 5.3 Stage 3 绿灯及 gate 判据
 
-- `cd rust/tsa-core && cargo test` 全绿；`cargo fmt --check`、`cargo clippy --all-targets -- -D warnings` 通过
+- 仓库根 `cargo test --workspace` 全绿；`cargo fmt --check`、`cargo clippy --all-targets -- -D warnings` 通过；待实现清单应已清空
 - 归一化后的 Rust 输出与 fixtures **逐字节相等**（或差异清单逐项对应 §3 允许字段且为空以外的差异都有书面豁免）
 - corpus_python：9 键 node_types 计数与 §2.3 锁定值完全一致
 - 若该单元走了 rust-anything 流程：`build` → `diff`（归一化后 0 差异）→ `gate` 全过才算完成；通过后**默认不 `enable`**，保持 Python 原路径
@@ -306,26 +325,27 @@ cd rust/tsa-core && cargo test
 
 ## 6. 禁止事项与发布/CI 安全护栏
 
-### 6.1 禁止分支（TSA 仓库）
+### 6.1 禁止推送到 TSA 原仓库的受保护分支
 
-- **禁止使用/推送**：`main`、`develop`、`hotfix/*`、`release/v*`
-- 依据：`hotfix-automation.yml` 与 `release-automation.yml` 在向 `hotfix/*`、`release/v*` push 时会调用 `reusable-publish.yml` 用 `secrets.PYPI_API_TOKEN` **自动发布 PyPI**（v3.1.2 即经此路径发布）；`develop-automation.yml` 会自动开 develop→main 的 PR。合并到 `main` 本身不发版，但仍在禁止之列
-- 唯一允许的工作分支：`feature/rust-anything-rewrite`（已存在，基于 `origin/main` @ `f95da603`）
+- 对上游 `aimasteracc/tree-sitter-analyzer`：**禁止推送** `main`、`develop`、`hotfix/*`、`release/v*`（以及不要再把改写产物推回该仓库）。
+- 依据：该仓库的 `hotfix-automation.yml` 与 `release-automation.yml` 在向 `hotfix/*`、`release/v*` push 时会调用 `reusable-publish.yml` 用 `secrets.PYPI_API_TOKEN` **自动发布 PyPI**；`develop-automation.yml` 会自动开 develop→main 的 PR。
+- 本仓库 `tree-sitter-analyzer-rs` 默认分支为 `main`。向本仓库推送或开 PR 必须先得到维护者明确同意；本仓库的 CI 只跑测试，没有 crates.io / PyPI / npm 发布步骤，但仍禁止发布。
 
 ### 6.2 PR 规则
 
-- **禁止直接 PR 到 `main`**：`.github/workflows/gitflow-guard.yml`（"Validate head→base per GITFLOW.md"）会拦截——PR 到 `main` 只允许 `release/v*` / `hotfix/*` 头分支
-- 实验期如需 PR，目标为 **`develop`**，且仅在规格完成、内容值得评审时
+- 不要向 TSA 原仓库的 `main` 开改写 PR（gitflow-guard 会拦截；实验 PR #1961 已关闭）。
+- 本仓库如需 PR，目标为 `main`，且仅在规格与门禁达标、维护者同意后再开。
 
 ### 6.3 禁止操作
 
-- **禁止** 全局 `rust-anything setup`（会写 `~/.claude.json`、`~/.codex/config.toml`、`~/.cursor/mcp.json`、`~/.gemini/settings.json`、`~/.config/opencode/*` 并可能留下含 token 的 `.bak`）。如需 MCP，只在 TSA 实验分支的项目级 `.mcp.json` 手写 stdio 条目
-- **禁止** `--agent claude` / `--agent codex`（默认 `acceptEdits` / `--full-auto` 无人值守，消耗付费额度；3 轮 × 30 分钟上限）。写 `port.rs` 由受控会话按 `TASK.md` 进行
+- **禁止** 全局 `rust-anything setup`（会写 `~/.claude.json`、`~/.codex/config.toml`、`~/.cursor/mcp.json`、`~/.gemini/settings.json`、`~/.config/opencode/*` 并可能留下含 token 的 `.bak`）。如需 MCP，只在本仓库项目级 `.mcp.json` 手写 stdio 条目
+- **禁止** `--agent claude` / `--agent codex`（默认 `acceptEdits` / `--full-auto` 无人值守，消耗付费额度；3 轮 × 30 分钟上限）。写 `port.rs` 由受控会话按任务说明进行
 - **禁止** `rust-anything enable`（会修改 Python 源文件）、`go` 带 `--agent` 自动批准、MCP 中自动批准 `go`/`enable`/`package`/`app_lift`
-- **禁止** 修改 Python 源码、`tests/`、`pyproject.toml`、`.github/` 及任何 PyPI 发行文件（含 `upload_to_pypi.py`）；本阶段一切写入仅限 `rust/`
+- **禁止** 修改上游 TSA 的 Python 源码、`pyproject.toml` 及任何 PyPI 发行文件；本仓库内的改动不得发布到 crates.io / PyPI / npm
+- **禁止** 对 `mcp/` 或 `mcp/tools/` 做整目录 rust-anything `bridge`
 - **禁止** 在运行环境放置任何发布凭据（PyPI / crates.io / npm / Git push / SSH key / Claude / Codex 登录态）
 - **禁止** 花钱：OpenAI embeddings 路径排除在范围外；不跑任何消耗付费额度的自动化
-- 不删黄金文件、不改 `tests/golden/corpus_python_expected.json`（只读对照物）
+- 不删黄金文件、不改锁定的 `tests/golden/corpus_python_expected.json` 与 `fixtures/python_plugin/corpus_python_expected.json`（只读对照物；节点计数差异走 §3 的标注版 + 人工审批流程）
 
 ### 6.4 基线不变式（ Stage 0 冻结，改动需重走规格评审）
 
