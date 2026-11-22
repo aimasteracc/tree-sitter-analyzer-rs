@@ -22,6 +22,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_LIST = Path(__file__).resolve().parent / "pending-contract-tests.txt"
 
+# Cargo / GitHub Actions often colorize with CSI sequences such as
+# "\x1b[1m\x1b[92m     Running\x1b[0m tests/foo.rs".
+ANSI_RE = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+
+def strip_ansi(text: str) -> str:
+    return ANSI_RE.sub("", text)
+
+
 UNIMPL_RE = re.compile(r"not yet implemented|unimplemented!|not implemented")
 COMPILE_RE = re.compile(r"error\[E[0-9]+\]|could not compile")
 RUNNING_RE = re.compile(
@@ -76,7 +84,10 @@ def parse_cargo_test_output(text: str) -> dict[str, dict[str, str]]:
 
     Accepts both the default libtest summary (``---- name stdout ----``)
     and interleaved / --nocapture panics (``thread 'name' panicked at``).
+    ANSI color codes are stripped first so GitHub Actions
+    (``CARGO_TERM_COLOR=always``) logs parse the same as local uncolored ones.
     """
+    text = strip_ansi(text)
     results: dict[str, dict[str, str]] = {}
     binary: str | None = None
     collecting: str | None = None
@@ -230,6 +241,8 @@ def main() -> int:
         if not log_text.endswith("\n"):
             sys.stdout.write("\n")
 
+    # Parse and judge the colorless text; keep the original stream for display.
+    log_text = strip_ansi(log_text)
     results = parse_cargo_test_output(log_text)
     if COMPILE_RE.search(log_text) and not results:
         print("checker FAILED: cargo test did not compile")
