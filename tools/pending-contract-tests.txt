@@ -1,0 +1,39 @@
+# Stage 1 pending contract tests.
+# Each entry is <test-binary>::<test-function> and MUST fail with
+# todo!() / unimplemented!() ("not yet implemented" or "not implemented").
+# A pending test that passes, a pending test that fails for any other reason,
+# or a failure of a test not on this list, all make the checker fail.
+# Remove a name from this list only when that test is implemented and green.
+
+envelope_contract::test_canonical_verdicts_match_fixture
+envelope_contract::test_build_response_all_canonical_verdicts
+envelope_contract::test_build_response_warnings_variants
+envelope_contract::test_build_response_rejects_invalid_verdicts
+envelope_contract::test_build_error_and_error_response
+envelope_contract::test_build_success_and_agent_summary
+envelope_contract::test_validate_tool_response_valid_and_invalid
+envelope_contract::test_envelope_violations_all_11_rules
+envelope_contract::test_error_recovery_classify_12_cases
+envelope_contract::test_error_recovery_build_agent_friendly_error
+envelope_contract::test_error_recovery_preserves_preset_and_derives_identity
+envelope_contract::test_k12_path_normalization_and_m14_language_echo
+envelope_contract::test_cli_structure_json_matches_v312_golden
+
+facade_contract::test_facade_names_order_and_count
+facade_contract::test_set_project_path_and_removed_tools
+facade_contract::test_legacy_tool_map_all_62_entries
+facade_contract::test_new_action_parity_all_21_entries
+facade_contract::test_facade_definitions_and_schemas
+facade_contract::test_dispatch_missing_and_unknown_action_suggestions
+facade_contract::test_dispatch_action_help_and_target_action
+facade_contract::test_dispatch_invalid_output_format_and_invalid_argument
+facade_contract::test_dispatch_read_fractional_bounds_error
+facade_contract::test_dispatch_structure_analyze_outline_read_golden
+facade_contract::test_dispatch_legacy_shim_and_scope_graph_injection
+
+python_plugin_contract::test_python_plugin_metadata
+python_plugin_contract::test_corpus_python_expected_9_locked_node_types
+python_plugin_contract::test_corpus_python_all_57_named_node_counts
+python_plugin_contract::test_corpus_python_analyze_result_and_elements
+python_plugin_contract::test_api_analyze_file_success_and_missing_file_error
+python_plugin_contract::test_python_edge_case_snippets_all_5
