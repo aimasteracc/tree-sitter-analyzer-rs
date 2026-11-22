@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""生成 rust/fixtures/ 下的 PyPI v3.1.2 真实黄金输出(Stage 1 录音脚本)。
+"""生成 fixtures/ 下的 PyPI v3.1.2 真实黄金输出(Stage 1 录音脚本)。
 
 设计约束(SPEC §3 / 任务要求):
 - 所有产物必须来自真实运行 v3.1.2 解释器,绝不手写期望值;
-- 只写 rust/fixtures/ 之内,绝不触碰 Python 源码树或 SPEC.md;
+- 只写 fixtures/ 之内,绝不触碰 Python 源码树或 SPEC.md;
 - 固定 cwd 为仓库根,全部用相对路径,避免绝对路径进入 fixtures;
 - 唯一归一化:analysis_time -> null(SPEC §3 允许删除/固定的字段)。
 
 用法(在仓库根目录执行):
-    /tmp/tsa-v312-venv/bin/python rust/fixtures/tools/gen_python_plugin.py
+    /tmp/tsa-v312-venv/bin/python fixtures/tools/gen_python_plugin.py
 """
 
 from __future__ import annotations
@@ -28,8 +28,8 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 SCRIPT_PATH = Path(__file__).resolve()
-REPO_ROOT = SCRIPT_PATH.parents[3]          # .../rust/fixtures/tools -> 仓库根
-FIXTURES_ROOT = SCRIPT_PATH.parents[1]      # .../rust/fixtures
+REPO_ROOT = SCRIPT_PATH.parents[2]          # .../fixtures/tools -> 本仓库根
+FIXTURES_ROOT = SCRIPT_PATH.parents[1]      # .../fixtures
 PLUGIN_DIR = FIXTURES_ROOT / "python_plugin"
 SNIPPETS_DIR = PLUGIN_DIR / "snippets"
 
@@ -509,7 +509,7 @@ def step5_edge_cases(plugin: Any) -> None:
     SNIPPETS_DIR.mkdir(parents=True, exist_ok=True)
     cases = []
     for filename in sorted(SNIPPETS):
-        rel_path = f"rust/fixtures/python_plugin/snippets/{filename}"
+        rel_path = f"fixtures/python_plugin/snippets/{filename}"
         (SNIPPETS_DIR / filename).write_text(SNIPPETS[filename], encoding="utf-8")
         print(f"[write] {rel_path} ({len(SNIPPETS[filename].encode('utf-8'))} bytes)")
 
@@ -571,12 +571,12 @@ def step6_manifest() -> None:
 
     # 文件清单:fixtures 下全部文件(含本清单自身,写出后即存在)
     files = sorted(
-        f"rust/fixtures/{path.relative_to(FIXTURES_ROOT).as_posix()}"
+        f"fixtures/{path.relative_to(FIXTURES_ROOT).as_posix()}"
         for path in FIXTURES_ROOT.rglob("*")
         if path.is_file()
     )
-    if "rust/fixtures/MANIFEST.json" not in files:
-        files.append("rust/fixtures/MANIFEST.json")
+    if "fixtures/MANIFEST.json" not in files:
+        files.append("fixtures/MANIFEST.json")
         files.sort()
 
     payload = {
@@ -584,12 +584,12 @@ def step6_manifest() -> None:
         "git_commit": GIT_COMMIT,
         "generated_at_jst": datetime.now(JST).isoformat(timespec="seconds"),
         "generator": {
-            "script": "rust/fixtures/tools/gen_python_plugin.py",
+            "script": "fixtures/tools/gen_python_plugin.py",
             "python_executable": sys.executable,
             "python_version": platform.python_version(),
             "platform": platform.platform(),
             "invocation": (
-                "/tmp/tsa-v312-venv/bin/python rust/fixtures/tools/gen_python_plugin.py"
+                "/tmp/tsa-v312-venv/bin/python fixtures/tools/gen_python_plugin.py"
                 " (cwd = 仓库根)"
             ),
         },

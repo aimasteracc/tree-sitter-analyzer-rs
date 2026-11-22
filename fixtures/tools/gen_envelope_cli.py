@@ -2,10 +2,10 @@
 """生成 envelope / CLI 的真实 v3.1.2 固定输出(fixture)。
 
 用法(必须在仓库根目录执行):
-    /tmp/tsa-v312-venv/bin/python rust/fixtures/tools/gen_envelope_cli.py
+    /tmp/tsa-v312-venv/bin/python fixtures/tools/gen_envelope_cli.py
 
 所有 JSON 均为对已安装的 tree_sitter_analyzer 3.1.2 的**真实调用结果**,
-禁止手工编纂。输出只写入 rust/fixtures/ 之下:
+禁止手工编纂。输出只写入 fixtures/ 之下:
   - envelope/response_builder_valid.json
   - envelope/response_builder_invalid.json
   - envelope/envelope_validation.json
@@ -49,8 +49,8 @@ from tree_sitter_analyzer.mcp.utils.error_sanitizer import (
 # ---------------------------------------------------------------- 路径与守卫
 
 SCRIPT_PATH = Path(__file__).resolve()
-FIXTURES_ROOT = SCRIPT_PATH.parents[1]  # rust/fixtures/
-REPO_ROOT = SCRIPT_PATH.parents[3]  # 仓库根,CLI 子进程的工作目录
+FIXTURES_ROOT = SCRIPT_PATH.parents[1]  # fixtures/
+REPO_ROOT = SCRIPT_PATH.parents[2]  # 本仓库根,CLI 子进程的工作目录
 ENVELOPE_DIR = FIXTURES_ROOT / "envelope"
 CLI_DIR = FIXTURES_ROOT / "cli"
 
@@ -63,7 +63,7 @@ assert (
 ), f"unexpected tsa install: {tree_sitter_analyzer.__file__} {tree_sitter_analyzer.__version__}"
 
 META: dict[str, Any] = {
-    "generator": "rust/fixtures/tools/gen_envelope_cli.py",
+    "generator": "fixtures/tools/gen_envelope_cli.py",
     "tsa_version": tree_sitter_analyzer.__version__,
     "tsa_module": str(Path(tree_sitter_analyzer.__file__).resolve()),
     "python_version": platform.python_version(),

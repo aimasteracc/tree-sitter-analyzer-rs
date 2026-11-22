@@ -6,7 +6,7 @@
 //! - `languages/python_plugin/extractor.py`(`PythonElementExtractor` 及各 mixin 的元素抽取)
 //! - `analyze_file_api` 顶层入口(`api_analyze_file` 的 success / missing_file 两种结局)
 //!
-//! 黄金对照物:`rust/fixtures/python_plugin/*.json`(5 份)+ `snippets/*.py` 语料。
+//! 黄金对照物:`fixtures/python_plugin/*.json`(5 份)+ `snippets/*.py` 语料。
 //! Stage 1:全部函数体为 `todo!()`,签名即 Stage 2-3 的实现契约。
 
 #![allow(unused_variables, dead_code)]

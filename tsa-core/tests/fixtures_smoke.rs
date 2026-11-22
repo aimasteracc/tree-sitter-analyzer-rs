@@ -1,6 +1,6 @@
 //! Stage 1 fixtures 冒烟测试(SPEC §5.2)。
 //!
-//! 验证 `rust/fixtures/` 下全部 13 份规范化 JSON(Python 侧 v3.1.2 真实输出):
+//! 验证 `fixtures/` 下全部 13 份规范化 JSON(Python 侧 v3.1.2 真实输出):
 //! 可读取、可被 serde_json 解析、顶层结构与 MANIFEST 声明的形状一致。
 //! 本测试只看「数据在、形状对」,不做行为对照——行为断言属于 Stage 2-3 的红灯契约测试。
 
@@ -8,7 +8,7 @@ use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// fixtures 根目录:相对 crate 清单定位(`rust/tsa-core` → `rust/fixtures`),与 cwd 无关。
+/// fixtures 根目录:相对 crate 清单定位(`tsa-core` → `fixtures`),与 cwd 无关。
 fn fixtures_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../fixtures")
 }

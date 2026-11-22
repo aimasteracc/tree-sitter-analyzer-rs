@@ -1,8 +1,8 @@
 //! envelope 模块的红灯契约测试(Stage 1,SPEC §5.2)。
 //!
-//! 黄金对照物为 `rust/fixtures/envelope/*.json` 与 `rust/fixtures/cli/cli_outputs.json`
+//! 黄金对照物为 `fixtures/envelope/*.json` 与 `fixtures/cli/cli_outputs.json`
 //! (Python 侧 tree_sitter_analyzer 3.1.2 真实输出的规范化 JSON,由
-//! `rust/fixtures/tools/gen_envelope_cli.py` 捕获,禁止手工编纂;顶层形状由
+//! `fixtures/tools/gen_envelope_cli.py` 捕获,禁止手工编纂;顶层形状由
 //! `fixtures_smoke.rs` 把守,本文件只做行为对照)。
 //!
 //! Stage 1 判据:每个测试都**先调用** `tsa_core::envelope::*`(当前函数体全部
@@ -26,14 +26,14 @@ use tsa_core::envelope::{
 
 // ---------- fixture 装载与断言助手 ----------
 
-/// fixtures 根目录:相对 crate 清单定位(`rust/tsa-core` → `rust/fixtures`),与 cwd 无关。
+/// fixtures 根目录:相对 crate 清单定位(`tsa-core` → `fixtures`),与 cwd 无关。
 fn fixtures_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../fixtures")
 }
 
-/// 仓库根目录(fixture 生成器与 CLI 黄金输出共同的工作目录)。
+/// 仓库根目录(本独立仓库根;语料在 `tests/golden/corpus_python.py`)。
 fn repo_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("..")
 }
 
 /// 读取并解析一份 fixture;失败即 panic(契约测试不该静默跳过)。

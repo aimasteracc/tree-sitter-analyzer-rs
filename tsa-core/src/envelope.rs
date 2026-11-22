@@ -6,7 +6,7 @@
 //! - `mcp/server_utils/error_recovery.py`(错误信封规范化、K12 路径归一化、M14 language 回显)
 //! - `tests/unit/cli/test_cli_envelope_contract.py` 的 `_CLI_ENVELOPE_KEYS`(CLI 4 键信封)
 //!
-//! 黄金对照物:`rust/fixtures/envelope/*.json` 与 `rust/fixtures/cli/cli_outputs.json`。
+//! 黄金对照物:`fixtures/envelope/*.json` 与 `fixtures/cli/cli_outputs.json`。
 //! Stage 1:全部函数体为 `todo!()`,签名即 Stage 2-3 的实现契约。
 
 #![allow(unused_variables, dead_code)]

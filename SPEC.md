@@ -1,5 +1,7 @@
 # SPEC — tree-sitter-analyzer Rust 改写（Stage 0 规格）
 
+本文件随 `rust/` 子树迁入独立仓库 `aimasteracc/tree-sitter-analyzer-rs` 后位于仓库根。下文凡写 `rust/SPEC.md`、`rust/fixtures/`、`rust/tsa-core/` 的路径，在本仓库中分别对应 `SPEC.md`、`fixtures/`、`tsa-core/`。
+
 - 基线：aimasteracc/tree-sitter-analyzer **v3.1.2**（commit `f95da6035a1191add763d254aa36313037dbabe3`，tag `v3.1.2`，`tree_sitter_analyzer/__init__.py` `__version__ == "3.1.2"`）
 - 工具：aimasteracc/rust-anything @ `8ac2c1c8ab77bd1a20588f0c03f0a72ab99a046e`（= 上游 erkamyaman/rust-anything main，MIT；已通过第三方只读安检，见 `/workspace/oss-review/reports/rust-anything.md`）
 - 分支：`feature/rust-anything-rewrite`（从 `origin/main` @ `f95da603` 开出）。**所有改写产物只放 `rust/` 目录**；不修改任何 Python 源码、`tests/`、`pyproject.toml`、`.github/`

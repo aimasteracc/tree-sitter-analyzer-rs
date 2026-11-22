@@ -11,7 +11,7 @@
      get_tool_definition() 摘要；
    - ``server_utils.tool_registration`` 中的 set_project_path 工具定义。
 2. ``facade_dispatch.json`` —— 用 ``anyio.run`` 驱动
-   ``create_tool_registry(project_root='/workspace/tree-sitter-analyzer')``
+   ``create_tool_registry(project_root=<this repo root>)``
    产出的真实门面：structure 门面的错误路径与成功路径、
    ``legacy_shim.dispatch_legacy`` 的 β 旧名转发（含 scope=graph 注入与
    deprecation 信封），以及 ``legacy_to_facade`` 的两个对照路由。
@@ -20,11 +20,11 @@
 - 逐次运行必变的计时/世代字段：``analysis_time`` / ``analysis_time_ms`` /
   ``duration_ms`` / ``elapsed_ms`` / ``cache_age_s``，以及
   ``provenance.generation`` / ``provenance.producer_version`` → ``"<normalized>"``；
-- 字符串中的绝对路径前缀 ``/workspace/tree-sitter-analyzer/`` 剥掉。
+- 字符串中的绝对仓库根前缀剥掉,改为相对路径。
 
 用法（在仓库根目录）::
 
-    /tmp/tsa-v312-venv/bin/python rust/fixtures/tools/gen_facade.py
+    /tmp/tsa-v312-venv/bin/python fixtures/tools/gen_facade.py
 """
 
 from __future__ import annotations
@@ -41,13 +41,13 @@ from tree_sitter_analyzer.mcp import _tool_registry, facade_map, legacy_shim
 from tree_sitter_analyzer.mcp.server_utils import tool_registration
 
 # 仓库根（分发用门面以它为 project_root；也是路径剥离前缀）。
-REPO_ROOT = "/workspace/tree-sitter-analyzer"
+REPO_ROOT = str(Path(__file__).resolve().parents[2])
 # 分发用例的目标文件（仓库相对路径）。
 CORPUS = "tests/golden/corpus_python.py"
-# 固定数据输出目录：本脚本位于 rust/fixtures/tools/，输出到 rust/fixtures/facade/。
+# 固定数据输出目录：本脚本位于 fixtures/tools/，输出到 fixtures/facade/。
 FIXTURE_DIR = Path(__file__).resolve().parent.parent / "facade"
 # 本脚本在仓库内的规范路径（写入 JSON 作为溯源信息）。
-SCRIPT_PATH = "rust/fixtures/tools/gen_facade.py"
+SCRIPT_PATH = "fixtures/tools/gen_facade.py"
 
 # 归一化占位符与逐次运行必变的字段集合（见模块 docstring）。
 _PLACEHOLDER = "<normalized>"

@@ -2,7 +2,7 @@
 //!
 //! 本 crate 只声明三块核心表面的类型与函数签名(envelope / facade 分发 / Python 插件),
 //! 全部函数体为按模块定制的 `todo!("Stage 2-3: ... not yet implemented in Rust")`:
-//! `tests/` 下的契约测试以 `rust/fixtures/`(PyPI v3.1.2 真实输出的规范化 JSON)为黄金对照,
+//! `tests/` 下的契约测试以 `fixtures/`(PyPI v3.1.2 真实输出的规范化 JSON)为黄金对照,
 //! Stage 1 验收判据为「编译零警告 + fixtures 冒烟全绿 + 行为测试全部因未实现而红」(SPEC §5.2)。
 //!
 //! 依赖 `serde_json` 的 `preserve_order` 特性:信封键序是逐字节对照的一部分。

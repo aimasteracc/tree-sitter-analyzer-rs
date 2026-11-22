@@ -1,6 +1,6 @@
 //! Stage 1 红灯契约测试:`tsa_core::python_plugin` 对照黄金 fixtures(Python v3.1.2 真实输出)。
 //!
-//! 黄金对照物(`rust/fixtures/python_plugin/`):
+//! 黄金对照物(`fixtures/python_plugin/`):
 //! - `corpus_python_expected.json` —— 语料 9 个关键节点类型的冻结计数;
 //! - `corpus_python_node_types.json` —— 语料全部命名节点计数(57 类型 / 1061 个);
 //! - `corpus_python_plugin_analysis.json` —— `analyze_file` 的 analysis / to_dict /
@@ -8,7 +8,7 @@
 //! - `api_analyze_corpus_python.json` —— 顶层 `api_analyze_file` 的 success / missing_file 结局;
 //! - `edge_cases_analysis.json` —— 5 个聚焦片段的同套视图。
 //!
-//! 语料本体:`<repo>/tests/golden/corpus_python.py`(经 `../../` 从 crate 清单定位,与 cwd 无关)。
+//! 语料本体:`<repo>/tests/golden/corpus_python.py`(经 crate 清单的 `..` 定位,与 cwd 无关)。
 //!
 //! Stage 1 验收判据:本文件全部测试因 `todo!("not yet implemented")` 而红、编译零警告
 //! (SPEC §5.2);Stage 2-3 实现后同一批测试转绿,断言不变。
@@ -24,17 +24,17 @@ use tsa_core::python_plugin;
 
 // ---------- 定位与加载辅助 ----------
 
-/// crate 清单目录(`rust/tsa-core`)。
+/// crate 清单目录(`tsa-core`)。
 fn manifest_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// 仓库根(`rust/tsa-core` → 仓库根),语料 `tests/golden/corpus_python.py` 在此之下。
+/// 仓库根(`tsa-core` → 仓库根),语料 `tests/golden/corpus_python.py` 在此之下。
 fn repo_root() -> PathBuf {
-    manifest_dir().join("../..")
+    manifest_dir().join("..")
 }
 
-/// fixtures 根目录(`rust/tsa-core` → `rust/fixtures`),与 cwd 无关。
+/// fixtures 根目录(`tsa-core` → `fixtures`),与 cwd 无关。
 fn fixtures_dir() -> PathBuf {
     manifest_dir().join("../fixtures")
 }

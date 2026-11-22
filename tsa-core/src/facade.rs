@@ -7,7 +7,7 @@
 //! - `mcp/tools/facade_tool.py`:`FacadeTool.execute` 分发序、参数校验/投影(F4)、
 //!   符号别名(R3)、`action=help`、difflib 拼写建议、`INVALID_ARGUMENT` 错误信封
 //!
-//! 黄金对照物:`rust/fixtures/facade/facade_registry.json` 与 `facade_dispatch.json`。
+//! 黄金对照物:`fixtures/facade/facade_registry.json` 与 `facade_dispatch.json`。
 //! Stage 1:全部函数体为 `todo!()`,签名即 Stage 2-3 的实现契约。
 
 #![allow(unused_variables, dead_code)]

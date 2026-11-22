@@ -20,7 +20,7 @@ use std::path::{Path, PathBuf};
 
 // ---------- fixture 装载(与 fixtures_smoke.rs 同一套口径)----------
 
-/// fixtures 根目录:相对 crate 清单定位(`rust/tsa-core` → `rust/fixtures`),与 cwd 无关。
+/// fixtures 根目录:相对 crate 清单定位(`tsa-core` → `fixtures`),与 cwd 无关。
 fn fixtures_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../fixtures")
 }
@@ -127,10 +127,10 @@ fn dispatch_cases(fx: &Value) -> &[Value] {
     cases
 }
 
-/// TSA 仓库根(`rust/tsa-core` → 仓库根),dispatch 的 project_root 基准;
+/// 本仓库根(`tsa-core` → 仓库根),dispatch 的 project_root 基准;
 /// fixture 中的相对 `file_path`(如 `tests/golden/corpus_python.py`)据此解析。
 fn repo_root() -> String {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
     fs::canonicalize(&path)
         .unwrap_or_else(|err| panic!("无法定位仓库根 {}: {err}", path.display()))
         .to_string_lossy()
