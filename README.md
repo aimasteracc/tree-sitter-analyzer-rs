@@ -15,15 +15,15 @@ Experimental Rust rewrite of [tree-sitter-analyzer](https://github.com/aimastera
 
 ```bash
 cargo test --test fixtures_smoke
-cargo test --test envelope_contract --test facade_contract --test python_plugin_contract
+python3 tools/check_contract_status.py
 ```
 
-The GitHub Actions workflow runs the smoke suite (must be green) and checks that the contract suite is still red for the unimplemented stubs, not because of compile or fixture errors.
+The GitHub Actions workflow runs the smoke suite (must be green) and `tools/check_contract_status.py`, which checks each contract test against `tools/pending-contract-tests.txt`. Pending tests must fail only on `todo!()` / `unimplemented!()`; implemented tests must pass. An unexpected pass, a non-todo failure, or a failure of a test not on the list fails CI.
 
 ## Layout
 
 - `tsa-core/` — Rust crate (`publish = false`)
 - `fixtures/` — v3.1.2 golden JSON plus regeneration scripts
-- `tests/golden/corpus_python.py` — vendored copy of the TSA v3.1.2 Python corpus used by the contract tests
+- `tests/golden/` — vendored TSA v3.1.2 Python corpus and locked `corpus_python_expected.json`
 
 This repository was split from the `rust/` directory of TSA branch `feature/rust-anything-rewrite` (head `632d2ba2`). Paths in older commits that start with `rust/` should be read as repository-root paths here.

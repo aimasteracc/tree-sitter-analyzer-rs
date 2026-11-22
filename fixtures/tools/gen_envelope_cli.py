@@ -451,7 +451,7 @@ def gen_error_recovery() -> dict[str, Any]:
 
 # --------------------------------------------- 5. CLI 子进程输出
 
-TIMING_KEYS = {"analysis_time", "duration_ms", "elapsed_ms", "elapsed_time"}
+TIMING_KEYS = {"analysis_time", "duration_ms", "elapsed_ms", "elapsed_time", "timestamp"}
 
 
 def _normalize_strings(value: Any) -> Any:

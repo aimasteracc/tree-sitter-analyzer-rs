@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CARGO_TERM_COLOR: never
+
 jobs:
   fixtures-smoke:
     name: Fixtures smoke (must pass)
@@ -18,33 +21,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --test fixtures_smoke --no-fail-fast
 
-  contract-red:
-    name: Contract tests expected red (todo)
+  contract-status:
+    name: Contract tests pending list
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
-      - name: Compile and run contract tests; require unimplemented failures only
-        run: |
-          set +e
-          cargo test --no-fail-fast \
-            --test envelope_contract \
-            --test facade_contract \
-            --test python_plugin_contract \
-            | tee contract-test.log
-          status=${PIPESTATUS[0]}
-          set -e
-          if grep -E "error\[E[0-9]+\]|could not compile" contract-test.log; then
-            echo "::error::Contract tests failed to compile, not a Stage 1 red light."
-            exit 1
-          fi
-          if [ "$status" -eq 0 ]; then
-            echo "::error::Contract tests unexpectedly passed; Stage 1 requires todo!() red lights."
-            exit 1
-          fi
-          if ! grep -q "not yet implemented" contract-test.log; then
-            echo "::error::Failures were not todo!() unimplemented stubs."
-            exit 1
-          fi
-          echo "Contract tests failed as expected (unimplemented stubs)."
+      - name: Per-test pending vs implemented gate
+        run: python3 tools/check_contract_status.py
